@@ -14,7 +14,7 @@ int main() {
 
   eng::ProcessMonitor processMonitor(FONT);
 
-  window.setFramerateLimit(120);
+  // window.setFramerateLimit(120);
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {

@@ -27,7 +27,7 @@ void ProcessMonitor::update() {
   m_sessionTimeText.setString("sessionTime: " +
                               std::to_string(m_sessionElapsedTimeSecond));
   m_fpsText.setString("fps: " + std::to_string(m_fpsAvg));
-  m_memoryText.setString("wMemory: " + std::to_string(m_workinkMemoryUsage));
+  m_memoryText.setString("memory: " + std::to_string(m_privateMemoryUsage));
 };
 
 void ProcessMonitor::updateSessionElapsedTime() {
@@ -55,6 +55,10 @@ void ProcessMonitor::updateMemoryUsage() {
   //  cannot be shared with other processes, while the working set is the total
   //  amount of physical memory (RAM) a process is actively using, including
   //  both private and shared memory
+  //
+  //  You should look at private memory if you are trying to identify a memory
+  //  leak, and at the working set if you are trying to understand a process's
+  //  impact on physical RAM or if the system is low on memory
   if (GetProcessMemoryInfo(m_hProcess, (PROCESS_MEMORY_COUNTERS *)&m_pmc,
                            sizeof(m_pmc))) {
     m_workinkMemoryUsage =

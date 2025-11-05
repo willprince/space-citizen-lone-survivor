@@ -111,3 +111,15 @@ Here are some useful resources if you want to learn more about CMake:
 ## License
 
 The source code is dual licensed under Public Domain and MIT -- choose whichever you prefer.
+
+## TODO
+- Graphics
+- Network
+- Main Process Monitor
+    - Display cpu usage 
+    - Run only in monitor mode
+- Asset
+    - 2d assets
+    - 3d assets
+    - maps
+- Audio
