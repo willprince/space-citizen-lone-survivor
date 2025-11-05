@@ -44,8 +44,7 @@ The template starts out very basic, but might receive additional features over t
    Be sure to run these commands in the root directory of the project you just created.
 
    ```
-   cmake -B build
-   cmake --build build
+   cmake -B build; cmake --build build --parallel 24; .\build\main.exe
    ```
 
 9. Enjoy!
