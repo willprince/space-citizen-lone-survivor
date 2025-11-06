@@ -2,6 +2,7 @@
 #ifndef PROCESS_MONITOR_HPP
 #define PROCESS_MONITOR_HPP
 
+#include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Font.hpp>
