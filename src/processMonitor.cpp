@@ -1,10 +1,10 @@
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #include "processMonitor.hpp"
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
-#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #include <iostream>
 #include <psapi.h>
 #include <windows.h>
@@ -15,8 +15,13 @@ ProcessMonitor::ProcessMonitor(const sf::Font &font)
       m_sessionElapsedTimeSecond(0), m_sessionTimeText(m_font, "", 12),
       m_fpsText(m_font, "", 12), m_memoryText(m_font, "", 12) {
   m_fpsText.setPosition({12, 12});
+  m_fpsText.setFillColor(sf::Color::White);
+
   m_sessionTimeText.setPosition({100, 12});
+  m_sessionTimeText.setFillColor(sf::Color::White);
+
   m_memoryText.setPosition({300, 12});
+  m_memoryText.setFillColor(sf::Color::White);
 }
 
 void ProcessMonitor::update() {

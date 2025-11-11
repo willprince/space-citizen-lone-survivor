@@ -123,3 +123,4 @@ The source code is dual licensed under Public Domain and MIT -- choose whichever
     - 3d assets
     - maps
 - Audio
+-*.glsl lsp support
