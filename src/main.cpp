@@ -15,16 +15,19 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <imgui-SFML.h>
+#include <imgui.h>
 #include <iostream>
 
 using namespace std;
 
 int main() {
+
   const sf::Font FONT = sf::Font("src/fonts/3270NerdFontMono-Regular.ttf");
   const uint16_t windowWidth = 1920u;
   const uint16_t windowHeight = 1080u;
   auto window = sf::RenderWindow(sf::VideoMode({windowWidth, windowHeight}),
-                                 "CMake SFML Project");
+                                 "IsoMetric engine");
   window.setVerticalSyncEnabled(false);
   if (!window.setActive(true)) {
     return -1;
@@ -33,6 +36,9 @@ int main() {
   if (!gladLoadGL()) {
     return -1;
   }
+
+  bool loadDefaultFont = true;
+  auto gui = ImGui::SFML::Init(window, loadDefaultFont);
 
   eng::ProcessMonitor processMonitor(FONT);
   Shader shader = Shader("src/shaders/shader.vs", "src/shaders/shader.fs");
@@ -159,8 +165,11 @@ int main() {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   sf::Clock sessionClock;
+  sf::Clock guiClock;
+
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
+      ImGui::SFML::ProcessEvent(window, event.value());
       if (event->is<sf::Event::Closed>()) {
         window.close();
       } else if (const auto *resized = event->getIf<sf::Event::Resized>()) {
@@ -169,18 +178,6 @@ int main() {
                      event->getIf<sf::Event::KeyPressed>()) {
         if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
           window.close();
-        if (keyPressed->scancode == sf::Keyboard::Scancode::Up) {
-          smileyTransparence += 0.05;
-          shader.use();
-          shader.setFloat("texture2Transparance", smileyTransparence);
-          cout << "up key pressed" << endl;
-        }
-        if (keyPressed->scancode == sf::Keyboard::Scancode::Down) {
-          smileyTransparence -= 0.05;
-          shader.use();
-          shader.setFloat("texture2Transparance", smileyTransparence);
-          cout << "down key pressed" << endl;
-        }
       }
     }
     window.clear();
@@ -220,6 +217,10 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUseProgram(0);
+
+    ImGui::SFML::Update(window, guiClock.restart());
+    ImGui::ShowDemoWindow();
+    ImGui::SFML::Render(window);
 
     window.draw(processMonitor);
     window.display();
