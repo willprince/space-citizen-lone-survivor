@@ -124,3 +124,5 @@ The source code is dual licensed under Public Domain and MIT -- choose whichever
     - maps
 - Audio
 -*.glsl lsp support
+- dev tool
+    - Console ... to be defined

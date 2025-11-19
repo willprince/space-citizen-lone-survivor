@@ -1,10 +1,13 @@
 #include "glad/glad.h"
+#include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
+#include "glm/trigonometric.hpp"
 #include "processMonitor.hpp"
 #include "shader_s.hpp"
 #include "stb_image/stb_image.h"
+#include <GL/gl.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/OpenGL.hpp>
@@ -18,11 +21,10 @@
 #include <imgui-SFML.h>
 #include <imgui.h>
 #include <iostream>
+#include <minwindef.h>
 
 using namespace std;
-
 int main() {
-
   const sf::Font FONT = sf::Font("src/fonts/3270NerdFontMono-Regular.ttf");
   const uint16_t windowWidth = 1920u;
   const uint16_t windowHeight = 1080u;
@@ -43,13 +45,37 @@ int main() {
   eng::ProcessMonitor processMonitor(FONT);
   Shader shader = Shader("src/shaders/shader.vs", "src/shaders/shader.fs");
 
+  glm::vec3 cubePositions[] = {
+      glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
+      glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
+      glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
+      glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
+      glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
+
   float vertices[] = {
-      // positions        // colors         // texture coords
-      0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-      -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
-  };
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
+      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
+      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f, 0.0f,
+
+      -0.5f, 0.5f,  0.5f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 1.0f, 1.0f,
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  1.0f, 0.0f,
+
+      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      0.5f,  -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f, 1.0f,
+      0.5f,  -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 1.0f,
+      0.5f,  -0.5f, 0.5f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f};
 
   unsigned int indices[] = {
       0, 1, 3, // R Triangle
@@ -59,52 +85,19 @@ int main() {
   unsigned int VBO, VAO, EBO;
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
 
   glBindVertexArray(VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
   // vertex att
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
-  // color att
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+  // text att
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
-  // text att
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
 
-  unsigned int VBO1, VAO1, EBO1;
-  glGenVertexArrays(1, &VAO1);
-  glGenBuffers(1, &VBO1);
-  glGenBuffers(1, &EBO1);
-
-  glBindVertexArray(VAO1);
-
-  glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
-  // vertex att
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
-  // color att
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-  // text att
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
   // Loading container texture 1
   unsigned int texture;
   glGenTextures(1, &texture);
@@ -129,7 +122,7 @@ int main() {
   }
   stbi_image_free(data);
 
-  // Loading container texture 1
+  // Loading container texture 2
   unsigned int texture2;
   glGenTextures(1, &texture2);
   glBindTexture(GL_TEXTURE_2D, texture2);
@@ -152,7 +145,7 @@ int main() {
   }
   stbi_image_free(data);
 
-  float smileyTransparence = 0.2;
+  float smileyTransparence = 0;
   shader.use();
   shader.setInt("texture1", 0);
   shader.setInt("texture2", 1);
@@ -166,6 +159,11 @@ int main() {
 
   sf::Clock sessionClock;
   sf::Clock guiClock;
+
+  // Frustum
+  float fov = 45.0f;
+  float nearPlane = 0.1f;
+  float farPlane = 100.0f;
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
@@ -182,32 +180,46 @@ int main() {
     }
     window.clear();
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader.use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture2);
-    // Transfmorm
+
+    glEnable(GL_DEPTH_TEST);
+
     float sessionTime = sessionClock.getElapsedTime().asSeconds();
-    glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::rotate(trans, sessionTime, glm::vec3(0.0, 0.0, 1.0));
-    // trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
-    //  trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.0f));
-    shader.setMat("transform", trans);
 
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    const float radius = 10.0f;
+    float camX = sin(sessionTime) * radius;
+    float camZ = cos(sessionTime) * radius;
+    glm::mat4 view;
+    view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
+                       glm::vec3(0.0, 1.0, 0.0));
 
-    glm::mat4 trans1 = glm::mat4(1.0f);
-    trans1 = glm::translate(trans1, glm::vec3(-0.5, 0.5, 0.0));
-    float scaleAmount = abs(sin(sessionTime));
-    trans1 =
-        glm::scale(trans1, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
-    shader.setMat("transform", trans1);
+    glm::mat4 projection = glm::mat4();
+    projection = glm::perspective(glm::radians(fov),
+                                  float(windowWidth) / float(windowHeight),
+                                  nearPlane, farPlane);
+
+    shader.setMat("view", view);
+    shader.setMat("projection", projection);
+
+    // Draw cubePositions
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    for (int i = 0; i < 10; i++) {
+
+      glm::mat4 model = glm::mat4(1.0f);
+
+      model = glm::translate(model, cubePositions[i]);
+
+      shader.setMat("model", model);
+
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+
     //  We have to unbind to avoid sfml trowing errors due to compatibility
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -219,9 +231,14 @@ int main() {
     glUseProgram(0);
 
     ImGui::SFML::Update(window, guiClock.restart());
-    ImGui::ShowDemoWindow();
-    ImGui::SFML::Render(window);
+    // ImGui::ShowDemoWindow();
+    ImGui::Begin("ENGINE CONTROLS");
+    ImGui::SliderFloat("FOV", &fov, 0.0f, 100.0f);
+    ImGui::SliderFloat("Near plane", &nearPlane, 0.0f, 100.0f);
+    ImGui::SliderFloat("Far plane", &farPlane, 0.0f, 100.0f);
+    ImGui::End();
 
+    ImGui::SFML::Render(window);
     window.draw(processMonitor);
     window.display();
     processMonitor.update();
