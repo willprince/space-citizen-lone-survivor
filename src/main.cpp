@@ -1,3 +1,4 @@
+#include "camera.hpp"
 #include "glad/glad.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
@@ -13,7 +14,10 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Mouse.hpp>
 #include <ctime>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,13 +28,18 @@
 #include <minwindef.h>
 
 using namespace std;
+
+void wasdEventHandler(Camera &camera, float frameDelta);
+
 int main() {
   const sf::Font FONT = sf::Font("src/fonts/3270NerdFontMono-Regular.ttf");
   const uint16_t windowWidth = 1920u;
   const uint16_t windowHeight = 1080u;
   auto window = sf::RenderWindow(sf::VideoMode({windowWidth, windowHeight}),
                                  "IsoMetric engine");
+  window.setMouseCursorVisible(false);
   window.setVerticalSyncEnabled(false);
+
   if (!window.setActive(true)) {
     return -1;
   }
@@ -159,13 +168,37 @@ int main() {
 
   sf::Clock sessionClock;
   sf::Clock guiClock;
+  sf::Clock frameClock;
 
   // Frustum
   float fov = 45.0f;
   float nearPlane = 0.1f;
   float farPlane = 100.0f;
+  // Camera
+  Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+  float lastX = windowWidth / 2.0f;
+  float lastY = windowHeight / 2.0f;
+  bool firstMouse = true;
+
+  float currentFrame = 0.0f;
+  float deltaFrame = 0.0f;
+  float lastFrame = 0.0f;
 
   while (window.isOpen()) {
+
+    currentFrame = frameClock.getElapsedTime().asSeconds();
+    deltaFrame = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+
+    wasdEventHandler(camera, deltaFrame);
+    sf::Vector2 mousePos = sf::Mouse::getPosition();
+
+    float offsetX = mousePos.x - lastX;
+    float offsetY = lastY - mousePos.y;
+    lastX = mousePos.x;
+    lastY = mousePos.y;
+    camera.ProcessMouseMovement(offsetX, offsetY);
+
     while (const std::optional event = window.pollEvent()) {
       ImGui::SFML::ProcessEvent(window, event.value());
       if (event->is<sf::Event::Closed>()) {
@@ -176,8 +209,11 @@ int main() {
                      event->getIf<sf::Event::KeyPressed>()) {
         if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
           window.close();
+        else {
+        }
       }
     }
+
     window.clear();
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -192,18 +228,13 @@ int main() {
 
     float sessionTime = sessionClock.getElapsedTime().asSeconds();
 
-    const float radius = 10.0f;
-    float camX = sin(sessionTime) * radius;
-    float camZ = cos(sessionTime) * radius;
     glm::mat4 view;
-    view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
-                       glm::vec3(0.0, 1.0, 0.0));
+    view = camera.GetViewMatrix();
 
     glm::mat4 projection = glm::mat4();
     projection = glm::perspective(glm::radians(fov),
                                   float(windowWidth) / float(windowHeight),
                                   nearPlane, farPlane);
-
     shader.setMat("view", view);
     shader.setMat("projection", projection);
 
@@ -242,5 +273,20 @@ int main() {
     window.draw(processMonitor);
     window.display();
     processMonitor.update();
+  }
+}
+
+void wasdEventHandler(Camera &camera, float frameDelta) {
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+    camera.ProcessKeyboard(Camera_Movement::FORWARD, frameDelta);
+  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+    camera.ProcessKeyboard(Camera_Movement::BACKWARD, frameDelta);
+  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+    camera.ProcessKeyboard(Camera_Movement::LEFT, frameDelta);
+  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+    camera.ProcessKeyboard(Camera_Movement::RIGHT, frameDelta);
   }
 }
