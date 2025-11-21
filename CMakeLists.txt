@@ -25,6 +25,14 @@ FetchContent_Declare(
   GIT_TAG master
 )
 
+message(STATUS "Fetching ASSIMP...")
+FetchContent_Declare(ASSIMP
+    GIT_REPOSITORY https://github.com/assimp/assimp
+    GIT_TAG v6.0.2 
+    GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
+    SYSTEM)
+  FetchContent_MakeAvailable(ASSIMP)
 
 set(IMGUI_DIR ${imgui_SOURCE_DIR})
 set(IMGUI_SFML_FIND_SFML OFF)
@@ -34,4 +42,4 @@ FetchContent_MakeAvailable(imgui-sfml)
 add_executable(main src/main.cpp src/processMonitor.cpp src/glad.c )
 target_compile_features(main PRIVATE cxx_std_17)
 target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(main PRIVATE SFML::Graphics psapi pdh opengl32 ImGui-SFML::ImGui-SFML )
+target_link_libraries(main PRIVATE SFML::Graphics psapi pdh opengl32 ImGui-SFML::ImGui-SFML assimp)
