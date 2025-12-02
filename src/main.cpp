@@ -88,14 +88,14 @@ int main() {
 
   // load models
   // -----------
-  Model ourModel("src/resources/objects/battalion/Taunt.dae");
-  Animation danceAnimation("src/resources/objects/maria/Taunt.dae", &ourModel);
-  Animator animator(&danceAnimation);
+  Model ourModel("src/resources/objects/square/test1.fbx");
+  // Animation danceAnimation("src/resources/objects/square/test1.fbx",
+  // &ourModel); Animator animator(&danceAnimation);
 
   while (window.isOpen()) {
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
     currentFrame = frameClock.getElapsedTime().asSeconds();
@@ -105,13 +105,13 @@ int main() {
     wasdEventHandler(camera, deltaFrame);
     sf::Vector2 mousePos = sf::Mouse::getPosition();
 
-    animator.UpdateAnimation(deltaFrame);
+    // animator.UpdateAnimation(deltaFrame);
 
     float offsetX = mousePos.x - lastX;
     float offsetY = lastY - mousePos.y;
     lastX = mousePos.x;
     lastY = mousePos.y;
-    // camera.ProcessMouseMovement(offsetX, offsetY);
+    camera.ProcessMouseMovement(offsetX, offsetY);
 
     while (const std::optional event = window.pollEvent()) {
       ImGui::SFML::ProcessEvent(window, event.value());
@@ -147,21 +147,16 @@ int main() {
     shader.setMat("projection", projection);
     shader.setMat("view", view);
 
-    auto transforms = animator.GetFinalBoneMatrices();
-    for (int i = 0; i < transforms.size(); ++i)
-      shader.setMat("finalBonesMatrices[" + std::to_string(i) + "]",
-                    transforms[i]);
-    // render the loaded model
+    // auto transforms = animator.GetFinalBoneMatrices();
+    // for (int i = 0; i < transforms.size(); ++i) {
+    //   shader.setMat("finalBonesMatrices[" + std::to_string(i) + "]",
+    //                 transforms[i]);
+    // }
+    // // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(
-        model,
-        glm::vec3(
-            0.0f, -0.4f,
-            0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(
-        model,
-        glm::vec3(.5f, .5f,
-                  .5f)); // it's a bit too big for our scene, so scale it down
+    model = glm::translate(model, glm::vec3(0.0f, -0.4f, 0.0f));
+    // it's a bit too big for our scene, so scale it down
+    model = glm::scale(model, glm::vec3(.5f, .5f, .5f));
     shader.setMat("model", model);
     ourModel.Draw(shader);
     // Unbind texture so other draw are not affected like processMonitorFonts

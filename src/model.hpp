@@ -90,6 +90,7 @@ private:
   }
 
   void SetVertexBoneDataToDefault(Vertex &vertex) {
+
     for (int i = 0; i < MAX_BONE_INFLUENCE; i++) {
       vertex.m_BoneIDs[i] = -1;
       vertex.m_Weights[i] = 0.0f;
@@ -117,6 +118,7 @@ private:
 
       vertices.push_back(vertex);
     }
+
     for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
       aiFace face = mesh->mFaces[i];
       for (unsigned int j = 0; j < face.mNumIndices; j++)
@@ -138,7 +140,6 @@ private:
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     ExtractBoneWeightForVertices(vertices, mesh, scene);
-
     return Mesh(vertices, indices, textures);
   }
 
@@ -189,12 +190,14 @@ private:
     string filename = string(path);
     filename = directory + '/' + filename;
 
+    cout << "Loaded: " << filename << endl;
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
     unsigned char *data =
         stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+
     if (data) {
       GLenum format;
       if (nrComponents == 1)
@@ -214,7 +217,6 @@ private:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                       GL_LINEAR_MIPMAP_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
       stbi_image_free(data);
     } else {
       std::cout << "Texture failed to load at path: " << path << std::endl;
