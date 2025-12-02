@@ -31,6 +31,7 @@
 #include <imgui.h>
 #include <iostream>
 #include <minwindef.h>
+#include "background.hpp"
 
 using namespace std;
 
@@ -165,6 +166,9 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUseProgram(0);
+
+    Background bg = Background();
+    bg.draw();
 
     ImGui::SFML::Update(window, guiClock.restart());
     // ImGui::ShowDemoWindow();
